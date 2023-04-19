@@ -1,4 +1,4 @@
-import './style.css'
+import './style.scss'
 
 import { hlsData, m3u8 } from './tools/m3u8Handler'
 import { autoplay } from './tools/autoplay'
