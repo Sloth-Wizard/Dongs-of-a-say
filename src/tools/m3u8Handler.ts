@@ -83,9 +83,7 @@ export const m3u8 = {
                 }
 
                 // Start a new instance
-                hls.instance = new Hls({
-                    enableWorker: true
-                });
+                hls.instance = new Hls();
                 hls.instance.attachMedia(audio)
                 hls.instance.loadSource(`${import.meta.env.BASE_URL}${manifest.path}`)
                 hls.instance.on(Hls.Events.MANIFEST_LOADED, () => {
