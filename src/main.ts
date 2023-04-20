@@ -17,7 +17,7 @@ async function start() {
     }
 
     // Prepare both components
-    const elements = await prepareElements(app)
+    const elements = prepareElements(app)
    
     // Create the 24h bar
     const DayBar = (await import('./components/dayBar/DayBar')).default
@@ -70,7 +70,7 @@ async function start() {
  * 
  * @returns An object containing the `<audio>` and `<video>` elements
  */
-async function prepareElements(app: HTMLElement): Promise<{audio: HTMLAudioElement, video: HTMLVideoElement}> {
+function prepareElements(app: HTMLElement): {audio: HTMLAudioElement, video: HTMLVideoElement} {
     const audio = new Audio()
     audio.preload = 'metadata'
     audio.controls = true
