@@ -149,7 +149,7 @@ export default class DayBar {
             this.dayBar.progressbar.element.style.width = `${this.dayBar.progressbar.progress}px`
 
             // When the audio has finished the 15 minutes, skip to the next manifest
-            if (audio.currentTime > fifteenMinutesInSecondes /*&& this.lastAutoSkip < this.dayBar.progressbar.progress - (fifteenMinutesInSecondes / 2)*/) {
+            if (audio.currentTime > fifteenMinutesInSecondes) {
                 console.log('Go to next manifest !')
                 console.log('Audio current time in seconds')
                 console.log(audio.currentTime)
@@ -158,9 +158,11 @@ export default class DayBar {
                 console.log('Time per pixel on the bar')
                 console.log(this.dayBar.bar.timePerPixel)
 
+                const targetProgress = (this.dayBar.bar.elapsedTime >= oneDayInSeconds - 1) ? 0 : this.dayBar.progressbar.progress
+
                 // TODO: This sends 2 events when auto switching to next for no reason, needs fixing
                 //this.lastAutoSkip = this.dayBar.progressbar.progress
-                this.sendBarTimeSignal(this.dayBar.progressbar.progress)
+                this.sendBarTimeSignal(targetProgress)
             }
         }, 1000)
     }
@@ -183,7 +185,15 @@ export default class DayBar {
      */
     private async getTimes(clickPosition?: number): Promise<TimeData> {
         // The time in seconds we need to jump to
-        const timeSeconds = (clickPosition) ? this.dayBar.bar.timePerPixel * clickPosition : this.dayBar.bar.startTime
+        let timeSeconds = 0
+
+        if (clickPosition === undefined) {
+            timeSeconds = this.dayBar.bar.startTime
+        }
+
+        if (clickPosition) {
+            timeSeconds = this.dayBar.bar.timePerPixel * clickPosition
+        }
         
         return {
             seconds: timeSeconds,
