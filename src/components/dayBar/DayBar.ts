@@ -9,10 +9,13 @@ export const customActionEventName = 'manifestAction'
 export default class DayBar {
     public dayBar: DayBarData
     protected lastAutoSkip: number
-    constructor(private app: HTMLElement) {
+    protected skipRetry: number
+    constructor(private app: HTMLElement, private audio: HTMLAudioElement) {
         // Create the bar
         this.dayBar = this.createBar()
         this.lastAutoSkip = 0
+        this.skipRetry = 0
+        this.linkAudio()
         this.handleClick()
     }
 
@@ -132,6 +135,9 @@ export default class DayBar {
             // Get the offset we clicked and compensate the bar's possible paddings or margin on this click position
             const clickOffsetX = e.clientX - this.dayBar.bar.element.offsetLeft
 
+            // Set the last auto skip to the clicked time in seconds
+            this.setLastAutoSkip()
+
             // Setup our needed times data
             this.sendBarTimeSignal(clickOffsetX)
         })
@@ -139,32 +145,56 @@ export default class DayBar {
 
     /**
      * ### Link an html audio element to the bar to enable live tracking
-     * 
-     * @param audio - The html audio element
      */
-    public async linkAudio(audio: HTMLAudioElement) {
+    private async linkAudio() {
         setInterval(() => {
-            this.dayBar.bar.elapsedTime = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + audio.currentTime)
+            this.dayBar.bar.elapsedTime = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
             this.dayBar.progressbar.progress = this.dayBar.bar.elapsedTime / this.dayBar.bar.timePerPixel
             this.dayBar.progressbar.element.style.width = `${this.dayBar.progressbar.progress}px`
 
             // When the audio has finished the 15 minutes, skip to the next manifest
-            if (audio.currentTime > fifteenMinutesInSecondes) {
+            if (this.audio.currentTime > fifteenMinutesInSecondes) {
                 console.log('Go to next manifest !')
                 console.log('Audio current time in seconds')
-                console.log(audio.currentTime)
+                console.log(this.audio.currentTime)
                 console.log('Audio elapsed time')
                 console.log(this.dayBar.bar.elapsedTime)
                 console.log('Time per pixel on the bar')
                 console.log(this.dayBar.bar.timePerPixel)
+                console.log(this.lastAutoSkip)
 
-                const targetProgress = (this.dayBar.bar.elapsedTime >= oneDayInSeconds - 1) ? 0 : this.dayBar.progressbar.progress
+                let targetProgress = (this.dayBar.bar.elapsedTime >= oneDayInSeconds - 1) ? 0 : this.dayBar.progressbar.progress
 
-                // TODO: This sends 2 events when auto switching to next for no reason, needs fixing
-                //this.lastAutoSkip = this.dayBar.progressbar.progress
+                // When not restaring the progressbar at 0
+                if (targetProgress !== 0) {
+                    // Set new lastAutoSkip when this is triggered at a later time
+                    if (this.lastAutoSkip < this.dayBar.bar.elapsedTime) {
+                        this.setLastAutoSkip()
+                    }
+    
+                    // Number of time this is triggered at the same elapsed time, meaning the new sound is not loading properly
+                    if (this.lastAutoSkip === this.dayBar.bar.elapsedTime) {
+                        this.skipRetry += 1
+                    }
+    
+                    // Maximum 2 retries
+                    if (this.skipRetry >= 2) {
+                        targetProgress += 1
+                    }
+                }
+                
                 this.sendBarTimeSignal(targetProgress)
             }
         }, 1000)
+    }
+
+    /**
+     * ### Last auto skip info setup and skipRetry reset
+     */
+    public async setLastAutoSkip() {
+        this.skipRetry = 0
+        this.lastAutoSkip = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
+        console.log(this.lastAutoSkip)
     }
 
     /**

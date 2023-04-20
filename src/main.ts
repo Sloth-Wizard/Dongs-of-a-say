@@ -21,11 +21,8 @@ async function start() {
    
     // Create the 24h bar
     const DayBar = (await import('./components/dayBar/DayBar')).default
-    const dayBarModule = new DayBar(app)
+    const dayBarModule = new DayBar(app, elements.audio)
     const dayBar = dayBarModule.dayBar
-
-    // Link the html audio element to the bar
-    await dayBarModule.linkAudio(elements.audio)
 
     // Prepare the correct manifest element to load
     dayBar.bar.element.addEventListener(dayBar.bar.customEvent, async ev => {
@@ -45,7 +42,7 @@ async function start() {
     dayBar.bar.element.dispatchEvent(
         new CustomEvent(dayBar.bar.customEvent, {
             detail: {
-                seconds: dayBar.bar.startTime,
+                seconds: 10795,//dayBar.bar.startTime,
                 minutes: dayBar.bar.startTime / 60,
                 hours: dayBar.bar.startTime / 3600,
                 interval: dayBar.bar.manifestChangeInterval,
