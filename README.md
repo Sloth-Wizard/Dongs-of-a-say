@@ -12,9 +12,9 @@ npm i
 
 Then you need to chunk your `mp3` files
 
-To do so, put all your `mp3` files in the `/public/audio` folder
+To do so, put all your `mp3` files in the `/public/audio` folder for example
 
-Then execute the `chunker.sh` file
+Then move the `chunker.sh` file to your chosen audio folder and execute the script there
 
 ```sh
 cd ./public/audio
