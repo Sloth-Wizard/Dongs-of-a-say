@@ -161,7 +161,10 @@ export default class DayBar {
                 console.log(this.dayBar.bar.elapsedTime)
                 console.log('Time per pixel on the bar')
                 console.log(this.dayBar.bar.timePerPixel)
+                console.log('Last auto skip')
                 console.log(this.lastAutoSkip)
+                console.log('Retry number')
+                console.log(this.skipRetry)
 
                 let targetProgress = (this.dayBar.bar.elapsedTime >= oneDayInSeconds - 1) ? 0 : this.dayBar.progressbar.progress
 
@@ -194,6 +197,7 @@ export default class DayBar {
     public async setLastAutoSkip() {
         this.skipRetry = 0
         this.lastAutoSkip = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
+        console.log('setLastAutoSkip')
         console.log(this.lastAutoSkip)
     }
 

@@ -42,7 +42,7 @@ async function start() {
     dayBar.bar.element.dispatchEvent(
         new CustomEvent(dayBar.bar.customEvent, {
             detail: {
-                seconds: 10795,//dayBar.bar.startTime,
+                seconds: dayBar.bar.startTime,
                 minutes: dayBar.bar.startTime / 60,
                 hours: dayBar.bar.startTime / 3600,
                 interval: dayBar.bar.manifestChangeInterval,
