@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p 'chunks'
+
 for filename in *.mp3; do
     mkdir ./chunks/${filename%.*}
     echo Created directory ${filename%.*}
