@@ -173,7 +173,7 @@ export default class DayBar {
         setInterval(() => {
             this.dayBar.bar.elapsedTime = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
             this.dayBar.progressbar.progress = this.dayBar.bar.elapsedTime / this.dayBar.bar.timePerPixel
-            this.dayBar.progressbar.element.style.width = `${this.dayBar.progressbar.progress}px`
+            this.dayBar.progressbar.element.style.width = `${this.dayBar.progressbar.progress}px`   
 
             // When the audio has finished the 15 minutes, skip to the next manifest
             if (this.audio.currentTime > fifteenMinutesInSecondes) {
@@ -189,7 +189,13 @@ export default class DayBar {
                 console.log('Retry number')
                 console.log(this.skipRetry)
 
-                let targetProgress = (this.dayBar.bar.elapsedTime >= oneDayInSeconds - 1) ? 0 : this.dayBar.progressbar.progress
+                let targetProgress = this.dayBar.progressbar.progress
+              
+                // If we are at the end of the day, meaning 86399 seconds, got to 0
+                if (this.dayBar.bar.elapsedTime >= oneDayInSeconds -1) {
+                    targetProgress = 0
+                    this.setLastAutoSkip()
+                }
 
                 // When not restaring the progressbar at 0
                 if (targetProgress !== 0) {
@@ -216,10 +222,12 @@ export default class DayBar {
 
     /**
      * ### Last auto skip info setup and skipRetry reset
+     *
+     * @param reset - Resets to the start of a new day, meaning 0 
      */
-    public async setLastAutoSkip() {
+    public async setLastAutoSkip(reset: boolean = false) {
         this.skipRetry = 0
-        this.lastAutoSkip = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
+        this.lastAutoSkip = (reset) ? 0 : Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
         console.log('setLastAutoSkip')
         console.log(this.lastAutoSkip)
     }
