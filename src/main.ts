@@ -6,6 +6,7 @@ import { windowSoundEvents } from './tools/windowEvents'
 import { customActionEventName } from './components/dayBar/DayBar'
 import { lazyloader } from './tools/lazyloader'
 import { keybinds } from './tools/keyboard'
+import { soundVolume } from './components/dayBar/volumeHandler'
 
 // Prepare an empty hls object
 let hls: hlsData = { manifestPath: '' }
@@ -18,6 +19,12 @@ async function start() {
 
     // Prepare both components
     const elements = prepareElements(app)
+
+    // Check for existing saved volume
+    const audioVolume = await soundVolume.volumeLocalStorage('get')
+    if (audioVolume) {
+        elements.audio.volume = parseFloat(audioVolume)
+    }
    
     // Create the 24h bar
     const DayBar = (await import('./components/dayBar/DayBar')).default

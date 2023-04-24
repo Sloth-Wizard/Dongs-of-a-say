@@ -1,5 +1,6 @@
 import './dayBar.scss'
 import { DayBarData, TimeData } from './interfaces'
+import { soundVolume } from './volumeHandler'
 
 const oneDayInSeconds = 86400
 const fifteenMinutesInSecondes = 900
@@ -117,8 +118,30 @@ export default class DayBar {
         const pause = document.createElement('pause')
         pause.addEventListener('click', _ => window.dispatchEvent(new CustomEvent(customActionEventName, { detail: { play: false } })))
 
+        const volume = document.createElement('volume')
+        const volumeLess = document.createElement('less')
+        volumeLess.innerHTML = '<span>-</span>'
+
+        const volumeMore = document.createElement('more')
+        volumeMore.innerHTML = '<span>+</span>'
+
+        // Listen to volume changes
+        soundVolume.handleVolume(volumeLess, volumeMore, this.audio)
+
+        const volumeLevelContainer = document.createElement('level')
+        // Listen to volume changes and modify the number of levels from the actual audio volume
+        soundVolume.setVolumeBar(this.audio, volumeLevelContainer)
+
+        // Add volume levels for the actual audio.volume by sending a `volumechange` event
+        this.audio.dispatchEvent(new Event('volumechange'))
+
+        volume.insertAdjacentElement('beforeend', volumeLess)
+        volume.insertAdjacentElement('beforeend', volumeLevelContainer)
+        volume.insertAdjacentElement('beforeend', volumeMore)
+
         actionsContainer.insertAdjacentElement('beforeend', play)
         actionsContainer.insertAdjacentElement('beforeend', pause)
+        actionsContainer.insertAdjacentElement('beforeend', volume)
 
         this.app.insertAdjacentElement('afterbegin', actionsContainer)
     }
