@@ -8,12 +8,12 @@ const customEventName = 'barEvent'
 export const customActionEventName = 'manifestAction'
 
 export default class DayBar {
-    public dayBar: DayBarData
+    public barData: DayBarData
     protected lastAutoSkip: number
     protected skipRetry: number
     constructor(private app: HTMLElement, private audio: HTMLAudioElement) {
         // Create the bar
-        this.dayBar = this.createBar()
+        this.barData = this.createBar()
         this.lastAutoSkip = 0
         this.skipRetry = 0
         this.linkAudio()
@@ -56,8 +56,8 @@ export default class DayBar {
 
         // Listen to window resizing and update the bar accordingly
         window.addEventListener('resize', async _ => {
-            this.dayBar.bar.timePerPixel = oneDayInSeconds / bar.offsetWidth
-            await this.sendBarTimeSignal(this.dayBar.bar.elapsedTime / this.dayBar.bar.timePerPixel)
+            this.barData.bar.timePerPixel = oneDayInSeconds / bar.offsetWidth
+            await this.sendBarTimeSignal(this.barData.bar.elapsedTime / this.barData.bar.timePerPixel)
         })
 
         return {
@@ -90,7 +90,7 @@ export default class DayBar {
         const clock = document.createElement('clock')
         clock.innerText = now.toLocaleTimeString()
         setInterval(() => {
-            const time = this.dayBar.bar.elapsedTime
+            const time = this.barData.bar.elapsedTime
 
             const hours = Math.floor(time / 3600)
             const minutes = Math.floor((time - (hours * 3600)) / 60)
@@ -154,9 +154,9 @@ export default class DayBar {
      * @returns An event so we can hook on it and execute more code
      */
     async handleClick(): Promise<void> {
-        this.dayBar.bar.element.addEventListener('mouseup', async e => {
+        this.barData.bar.element.addEventListener('mouseup', async e => {
             // Get the offset we clicked and compensate the bar's possible paddings or margin on this click position
-            const clickOffsetX = e.clientX - this.dayBar.bar.element.offsetLeft
+            const clickOffsetX = e.clientX - this.barData.bar.element.offsetLeft
 
             // Set the last auto skip to the clicked time in seconds
             this.setLastAutoSkip()
@@ -167,13 +167,27 @@ export default class DayBar {
     }
 
     /**
+     * ### Set the progress of the daybar
+     * 
+     * @param intervalPosition - The position of the bar in the day in seconds
+     * @param elapsedTime - The elapsed time on the current 15 minutes track being played in seconds
+     * @param progress - The progress given to the progressbar to style it correctly (should be seconds / timePerPixels)
+     */
+    async setDayBar(intervalPosition: number, elapsedTime: number, progress: number): Promise<void> {
+        // Set all the needed data to our dayBar component
+        this.barData.bar.dayIntervalPosition = intervalPosition
+        this.barData.bar.elapsedTime = elapsedTime
+        this.barData.progressbar.progress = progress
+    }
+
+    /**
      * ### Link an html audio element to the bar to enable live tracking
      */
     private async linkAudio() {
         setInterval(() => {
-            this.dayBar.bar.elapsedTime = Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
-            this.dayBar.progressbar.progress = this.dayBar.bar.elapsedTime / this.dayBar.bar.timePerPixel
-            this.dayBar.progressbar.element.style.width = `${this.dayBar.progressbar.progress}px`   
+            this.barData.bar.elapsedTime = Math.trunc((this.barData.bar.manifestChangeInterval * this.barData.bar.dayIntervalPosition) + this.audio.currentTime)
+            this.barData.progressbar.progress = this.barData.bar.elapsedTime / this.barData.bar.timePerPixel
+            this.barData.progressbar.element.style.width = `${this.barData.progressbar.progress}px`   
 
             // When the audio has finished the 15 minutes, skip to the next manifest
             if (this.audio.currentTime > fifteenMinutesInSecondes) {
@@ -181,18 +195,18 @@ export default class DayBar {
                 console.log('Audio current time in seconds')
                 console.log(this.audio.currentTime)
                 console.log('Audio elapsed time')
-                console.log(this.dayBar.bar.elapsedTime)
+                console.log(this.barData.bar.elapsedTime)
                 console.log('Time per pixel on the bar')
-                console.log(this.dayBar.bar.timePerPixel)
+                console.log(this.barData.bar.timePerPixel)
                 console.log('Last auto skip')
                 console.log(this.lastAutoSkip)
                 console.log('Retry number')
                 console.log(this.skipRetry)
 
-                let targetProgress = this.dayBar.progressbar.progress
+                let targetProgress = this.barData.progressbar.progress
               
                 // If we are at the end of the day, meaning 86399 seconds, got to 0
-                if (this.dayBar.bar.elapsedTime >= oneDayInSeconds -1) {
+                if (this.barData.bar.elapsedTime >= oneDayInSeconds -1) {
                     targetProgress = 0
                     this.setLastAutoSkip()
                 }
@@ -200,12 +214,12 @@ export default class DayBar {
                 // When not restaring the progressbar at 0
                 if (targetProgress !== 0) {
                     // Set new lastAutoSkip when this is triggered at a later time
-                    if (this.lastAutoSkip < this.dayBar.bar.elapsedTime) {
+                    if (this.lastAutoSkip < this.barData.bar.elapsedTime) {
                         this.setLastAutoSkip()
                     }
     
                     // Number of time this is triggered at the same elapsed time, meaning the new sound is not loading properly
-                    if (this.lastAutoSkip === this.dayBar.bar.elapsedTime) {
+                    if (this.lastAutoSkip === this.barData.bar.elapsedTime) {
                         this.skipRetry += 1
                     }
     
@@ -227,18 +241,9 @@ export default class DayBar {
      */
     public async setLastAutoSkip(reset: boolean = false) {
         this.skipRetry = 0
-        this.lastAutoSkip = (reset) ? 0 : Math.trunc((this.dayBar.bar.manifestChangeInterval * this.dayBar.bar.dayIntervalPosition) + this.audio.currentTime)
+        this.lastAutoSkip = (reset) ? 0 : Math.trunc((this.barData.bar.manifestChangeInterval * this.barData.bar.dayIntervalPosition) + this.audio.currentTime)
         console.log('setLastAutoSkip')
         console.log(this.lastAutoSkip)
-    }
-
-    /**
-     * ### Link and html video element to the bar to enable live tracking
-     * 
-     * @param video - The html video element
-     */
-    public async linkVideo(_: HTMLVideoElement) {
-        
     }
 
     /**
@@ -253,11 +258,11 @@ export default class DayBar {
         let timeSeconds = 0
 
         if (clickPosition === undefined) {
-            timeSeconds = this.dayBar.bar.startTime
+            timeSeconds = this.barData.bar.startTime
         }
 
         if (clickPosition) {
-            timeSeconds = this.dayBar.bar.timePerPixel * clickPosition
+            timeSeconds = this.barData.bar.timePerPixel * clickPosition
         }
         
         return {
@@ -276,6 +281,6 @@ export default class DayBar {
      */
     private async sendBarTimeSignal(targetProgress: number) {
         const times = await this.getTimes(targetProgress)
-        this.dayBar.bar.element.dispatchEvent(new CustomEvent(customEventName, { detail: times, bubbles: true, cancelable: true }))
+        this.barData.bar.element.dispatchEvent(new CustomEvent(customEventName, { detail: times, bubbles: true, cancelable: true }))
     }
 }

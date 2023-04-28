@@ -1,15 +1,16 @@
 import './style.scss'
 
-import { hlsData, m3u8 } from './tools/m3u8Handler'
+//import { hlsData, m3u8 } from './tools/m3u8Handler'
 import { autoplay } from './tools/autoplay'
 import { windowSoundEvents } from './tools/windowEvents'
 import { customActionEventName } from './components/dayBar/DayBar'
 import { lazyloader } from './tools/lazyloader'
 import { keybinds } from './tools/keyboard'
 import { soundVolume } from './components/dayBar/volumeHandler'
+import { dash } from './tools/dashHandler'
 
 // Prepare an empty hls object
-let hls: hlsData = { manifestPath: '' }
+//let hls: hlsData = { manifestPath: '' }
 
 async function start() {
     const app = document.querySelector<HTMLDivElement>('#app')
@@ -27,14 +28,15 @@ async function start() {
     }
    
     // Create the 24h bar
-    const DayBar = (await import('./components/dayBar/DayBar')).default
-    const dayBarModule = new DayBar(app, elements.audio)
-    const dayBar = dayBarModule.dayBar
+    const DayBarModule = (await import('./components/dayBar/DayBar')).default
+    const dayBar = new DayBarModule(app, elements.audio)
 
     // Prepare the correct manifest element to load
-    dayBar.bar.element.addEventListener(dayBar.bar.customEvent, async ev => {
-        const manifest = m3u8.manifest.prepare(ev as CustomEvent, dayBar)
-        hls = await m3u8.hls.loadSource(hls, elements.audio, manifest)
+    dayBar.barData.bar.element.addEventListener(dayBar.barData.bar.customEvent, async ev => {
+        //const manifest = m3u8.manifest.prepare(ev as CustomEvent, dayBar)
+        //hls = await m3u8.hls.loadSource(hls, elements.audio, manifest)
+        const manifest = await dash.manifest(ev as CustomEvent, dayBar)
+        dash.init(elements.audio, manifest)
         
         if (elements.audio.paused) {
             await autoplay.playAudio(elements.audio)
@@ -46,14 +48,14 @@ async function start() {
     })
 
     // Load the initial hls manifest at this time of day
-    dayBar.bar.element.dispatchEvent(
-        new CustomEvent(dayBar.bar.customEvent, {
+    dayBar.barData.bar.element.dispatchEvent(
+        new CustomEvent(dayBar.barData.bar.customEvent, {
             detail: {
-                seconds: dayBar.bar.startTime,
-                minutes: dayBar.bar.startTime / 60,
-                hours: dayBar.bar.startTime / 3600,
-                interval: dayBar.bar.manifestChangeInterval,
-                day: dayBar.bar.totalTime
+                seconds: 85000,//dayBar.barData.bar.startTime,
+                minutes: dayBar.barData.bar.startTime / 60,
+                hours: dayBar.barData.bar.startTime / 3600,
+                interval: dayBar.barData.bar.manifestChangeInterval,
+                day: dayBar.barData.bar.totalTime
             }
         })
     )
