@@ -21,10 +21,13 @@ async function start() {
     // Prepare both components
     const elements = prepareElements(app)
 
+    const audioContext = new AudioContext()
+    const gainNode = audioContext.createGain()
+
     // Check for existing saved volume
     const audioVolume = await soundVolume.volumeLocalStorage('get')
     if (audioVolume) {
-        elements.audio.volume = parseFloat(audioVolume)
+        gainNode.gain.value = parseFloat(audioVolume)
     }
    
     // Create the 24h bar
@@ -35,9 +38,10 @@ async function start() {
     dayBar.barData.bar.element.addEventListener(dayBar.barData.bar.customEvent, async ev => {
         //const manifest = m3u8.manifest.prepare(ev as CustomEvent, dayBar)
         //hls = await m3u8.hls.loadSource(hls, elements.audio, manifest)
-        const manifest = await dash.manifest(ev as CustomEvent, dayBar)
-        dash.init(elements.audio, manifest)
+        const manifest = await dash.manifest((<CustomEvent>ev).detail, dayBar)
+        dash.init(audioContext, manifest)
         
+        /*
         if (elements.audio.paused) {
             await autoplay.playAudio(elements.audio)
         }
@@ -45,20 +49,17 @@ async function start() {
         if (elements.video.paused) {
             await elements.video.play()
         }
+        */
     })
 
     // Load the initial hls manifest at this time of day
-    dayBar.barData.bar.element.dispatchEvent(
-        new CustomEvent(dayBar.barData.bar.customEvent, {
-            detail: {
-                seconds: 85000,//dayBar.barData.bar.startTime,
-                minutes: dayBar.barData.bar.startTime / 60,
-                hours: dayBar.barData.bar.startTime / 3600,
-                interval: dayBar.barData.bar.manifestChangeInterval,
-                day: dayBar.barData.bar.totalTime
-            }
-        })
-    )
+    dash.init(audioContext, await dash.manifest({
+        seconds: 0,//dayBar.barData.bar.startTime,
+        minutes: dayBar.barData.bar.startTime / 60,
+        hours: dayBar.barData.bar.startTime / 3600,
+        interval: dayBar.barData.bar.manifestChangeInterval,
+        day: dayBar.barData.bar.totalTime
+    }, dayBar))
 
     // Check if we can play the audio and video or not
     autoplay.init(app, elements.audio, elements.video)
@@ -118,5 +119,7 @@ function prepareElements(app: HTMLElement): {audio: HTMLAudioElement, video: HTM
 }
 
 window.addEventListener('load', async () => {
-    start()
+    if ('AudioContext' in window || 'webkitAudioContext' in window) {
+        start()
+    }
 })
