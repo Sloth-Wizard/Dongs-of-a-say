@@ -102,3 +102,29 @@ body {
     transform: translateY(-50%);
     pointer-events: none;
 }
+
+track {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    height: 36px;
+    width: calc(100% - 2rem);
+    bottom: 1rem;
+    right: 1rem;
+    pointer-events: none;
+    overflow: hidden;
+
+    span {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        min-height: 100%;
+        border-radius: 4px;
+        font-family: 'tty', sans-serif;
+        font-size: 1.25rem;
+        white-space: nowrap;
+        top: 0;
+        right: 0;
+    }
+}

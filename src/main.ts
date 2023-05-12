@@ -7,6 +7,7 @@ import { customActionEventName } from './components/dayBar/DayBar'
 import { lazyloader } from './tools/lazyloader'
 import { keybinds } from './tools/keyboard'
 import { soundVolume } from './components/dayBar/volumeHandler'
+import { tracks } from './tools/tracksInfo'
 
 // Prepare an empty hls object
 let hls: hlsData = { manifestPath: '' }
@@ -31,6 +32,10 @@ async function start() {
     const dayBarModule = new DayBar(app, elements.audio)
     const dayBar = dayBarModule.dayBar
 
+    // Load the tracks data
+    const tracksData = await tracks.load()
+    tracks.start(dayBar, tracksData)
+
     // Prepare the correct manifest element to load
     dayBar.bar.element.addEventListener(dayBar.bar.customEvent, async ev => {
         const manifest = m3u8.manifest.prepare(ev as CustomEvent, dayBar)
@@ -49,7 +54,7 @@ async function start() {
     dayBar.bar.element.dispatchEvent(
         new CustomEvent(dayBar.bar.customEvent, {
             detail: {
-                seconds: dayBar.bar.startTime,
+                seconds: 0,//dayBar.bar.startTime,
                 minutes: dayBar.bar.startTime / 60,
                 hours: dayBar.bar.startTime / 3600,
                 interval: dayBar.bar.manifestChangeInterval,
