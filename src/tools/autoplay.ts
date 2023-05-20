@@ -8,10 +8,10 @@ export const autoplay = {
      * @param audio - The html audio element
      * @param video - The html video element
      */
-    async init(app: HTMLElement, audio: HTMLAudioElement, video: HTMLVideoElement) {
+    async init(app: HTMLElement, audio: HTMLAudioElement, _video: HTMLVideoElement) {
         const hasAudioAuth = audio.play()
-        const hasVideoAuth = video.play()
-        if (hasAudioAuth !== undefined && hasVideoAuth !== undefined) {
+        //const hasVideoAuth = video.play()
+        if (hasAudioAuth !== undefined /*&& hasVideoAuth !== undefined*/) {
             // Create the button to authorize sounds to be played
             const btnContainer = document.createElement('div')
             btnContainer.classList.add('sound')
@@ -20,7 +20,7 @@ export const autoplay = {
             btn.innerText = 'Press start'
             btn.addEventListener('click', () => {
                 audio.play()
-                video.play()
+                //video.play()
 
                 if (!audio.paused) {
                     btn.remove()
@@ -29,7 +29,7 @@ export const autoplay = {
             
             btnContainer.insertAdjacentElement('beforeend', btn)
 
-            if (audio.paused && video.paused) {
+            if (audio.paused /*&& video.paused*/) {
                 app.insertAdjacentElement('beforeend', btnContainer)
             }
             

@@ -23,12 +23,12 @@
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100%;
-  overflow: hidden;
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100%;
+    overflow: hidden;
 }
 
 #app {
@@ -89,18 +89,6 @@ body {
             height: auto;
         }
     }
-}
-
-.plyr {
-    position: absolute;
-    display: none;
-    width: 0;
-    height: 0;
-    visibility: hidden;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    pointer-events: none;
 }
 
 track {
