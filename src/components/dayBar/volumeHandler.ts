@@ -13,7 +13,7 @@ export const soundVolume = {
             if (audio.volume <= 0) {
                 audio.volume = 0
             } else {
-                audio.volume = audio.volume - 0.1
+                audio.volume = Math.round((audio.volume - 0.1) * 10) / 10
             }
         })
 
@@ -21,7 +21,7 @@ export const soundVolume = {
             if (audio.volume >= 1) {
                 audio.volume = 1
             } else {
-                audio.volume = audio.volume + 0.1
+                audio.volume = Math.round((audio.volume + 0.1) * 10) / 10
             }
         })
     },
@@ -37,8 +37,10 @@ export const soundVolume = {
             soundVolume.volumeLocalStorage('set', audio.volume)
             levelContainer.innerHTML = ''
             let activeVolume = audio.volume * 10
-            for (let i = 0; i < activeVolume; i++) {
-                levelContainer.insertAdjacentHTML('beforeend', '<span></span>')
+            if (activeVolume) {
+                for (let i = 0; i < activeVolume; i++) {
+                    levelContainer.insertAdjacentHTML('beforeend', '<span></span>')
+                }
             }
         })
     },

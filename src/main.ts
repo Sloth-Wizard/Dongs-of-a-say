@@ -9,8 +9,8 @@ import { keybinds } from './tools/keyboard'
 import { soundVolume } from './components/dayBar/volumeHandler'
 import { tracks } from './tools/tracksInfo'
 
-const nightTimeStart = 72000 // 20h in seconds
-const nightTimeEnd = 21600 // 6h in seconds
+//const nightTimeStart = 72000 // 20h in seconds
+//const nightTimeEnd = 21600 // 6h in seconds
 
 // Prepare an empty hls object
 let hls: hlsData = { manifestPath: '' }
@@ -49,6 +49,7 @@ async function start() {
         }
 
         // TEMP VISUALS TODO: REPLACE BY THE VIDEO AGAIN
+        /*
         let doasSide = ''
         if (dayBar.bar.elapsedTime >= nightTimeEnd && dayBar.bar.elapsedTime <= nightTimeStart) { // Day time
             doasSide = 'A'
@@ -58,10 +59,11 @@ async function start() {
 
         // Set the image
         document.body.style.backgroundImage = `url(${import.meta.env.BASE_URL}/images/side${doasSide}.jpg)`
+        */
         
-        //if (elements.video.paused) {
-        //    await elements.video.play()
-        //}
+        if (elements.video.paused) {
+            await elements.video.play()
+        }
     })
 
     // Load the initial hls manifest at this time of day
@@ -122,7 +124,7 @@ function prepareElements(app: HTMLElement): {audio: HTMLAudioElement, video: HTM
     source.dataset.src = `${import.meta.env.BASE_URL}/video/vid.mp4#t=0.1`
     source.type = 'video/mp4'
 
-    //video.insertAdjacentElement('beforeend', source)
+    video.insertAdjacentElement('beforeend', source)
     videoContainer.insertAdjacentElement('beforeend', video)
 
     app.insertAdjacentElement('afterbegin', videoContainer)
